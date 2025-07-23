@@ -25,50 +25,57 @@ public class BotPollingWorker : BackgroundService
     {
         while (!cancellationToken.IsCancellationRequested)
         {
-            var updates = await _bot.GetUpdates(offset: _offset, timeout: 30, cancellationToken: cancellationToken);
-
-            foreach (var update in updates)
+            try
             {
-                try
+                var updates = await _bot.GetUpdates(offset: _offset, timeout: 30, cancellationToken: cancellationToken);
+
+                foreach (var update in updates)
                 {
-                    if (update.Message is null)
+                    try
                     {
-                        await _bot.SendMessage(update.Message!.Chat.Id, "Message is null", cancellationToken: cancellationToken);
-                        continue;
-                    }
+                        if (update.Message is null)
+                        {
+                            await _bot.SendMessage(update.Message!.Chat.Id, "Message is null", cancellationToken: cancellationToken);
+                            continue;
+                        }
 
-                    _offset = update.Id + 1;
-                    var commandText = update.Message?.Text?.Trim()?.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
-                    var updateType = BotExtensions.GetCommandByText(commandText);
-                    if (updateType == null)
-                    {
-                        await _bot.SendMessage(update.Message!.Chat.Id, "Not implemented command", cancellationToken: cancellationToken);
-                        continue;
-                    }
-                    var command = updateType.Value.GetCommandType();
-
-                    switch (command)
-                    {
-                        case BotUpdateType.Operation:
-                            await HandleOperationCommand(update, updateType.Value, cancellationToken);
-                            break;
-
-                        case BotUpdateType.User:
-                            await HandleUserCommand(update, updateType.Value, cancellationToken);
-                            break;
-
-                        default:
+                        _offset = update.Id + 1;
+                        var commandText = update.Message?.Text?.Trim()?.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+                        var updateType = BotExtensions.GetCommandByText(commandText);
+                        if (updateType == null)
+                        {
                             await _bot.SendMessage(update.Message!.Chat.Id, "Not implemented command", cancellationToken: cancellationToken);
-                            break;
+                            continue;
+                        }
+                        var command = updateType.Value.GetCommandType();
+
+                        switch (command)
+                        {
+                            case BotUpdateType.Operation:
+                                await HandleOperationCommand(update, updateType.Value, cancellationToken);
+                                break;
+
+                            case BotUpdateType.User:
+                                await HandleUserCommand(update, updateType.Value, cancellationToken);
+                                break;
+
+                            default:
+                                await _bot.SendMessage(update.Message!.Chat.Id, "Not implemented command", cancellationToken: cancellationToken);
+                                break;
+                        }
                     }
-                }
-                catch (Exception ex)
-                {
-                    if (update.Message is not null)
+                    catch (Exception ex)
                     {
-                        await _bot.SendMessage(update.Message.Chat.Id, $"Error: {ex.Message}, command: {update.Message.Text ?? ""}", cancellationToken: cancellationToken);
+                        if (update.Message is not null)
+                        {
+                            await _bot.SendMessage(update.Message.Chat.Id, $"Error: {ex.Message}, command: {update.Message.Text ?? ""}", cancellationToken: cancellationToken);
+                        }
                     }
                 }
+            }
+            catch
+            {
+                continue;
             }
         }
     }
