@@ -42,7 +42,7 @@ using (var scope = app.Services.CreateScope())
 }
 
 var webApp = WebApplication.Create();
-webApp.MapGet("/ping", () => "pong");
+webApp.MapMethods("/ping", ["GET", "HEAD"], () => "pong");
 _ = Task.Run(() => webApp.RunAsync());
 
 await app.RunAsync();
