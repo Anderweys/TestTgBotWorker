@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "TestTgBotWorker": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}
