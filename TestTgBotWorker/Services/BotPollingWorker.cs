@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Options;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 using TestTgBotWorker.Configuration;
 using TestTgBotWorker.Extensions;
 using TestTgBotWorker.Models.Enum;
@@ -27,15 +28,20 @@ public class BotPollingWorker : BackgroundService
         {
             try
             {
-                var updates = await _bot.GetUpdates(offset: _offset, timeout: 30, cancellationToken: cancellationToken);
+                var updates = await _bot.GetUpdates(
+                    offset: _offset,
+                    timeout: 30,
+                    limit: 10,
+                    allowedUpdates: [UpdateType.Message],
+                    cancellationToken: cancellationToken
+                );
 
                 foreach (var update in updates)
                 {
                     try
                     {
-                        if (update.Message is null)
+                        if (update.Message is null || !update.Message.Text!.StartsWith('/'))
                         {
-                            await _bot.SendMessage(update.Message!.Chat.Id, "Message is null", cancellationToken: cancellationToken);
                             continue;
                         }
 
@@ -44,7 +50,6 @@ public class BotPollingWorker : BackgroundService
                         var updateType = BotExtensions.GetCommandByText(commandText);
                         if (updateType == null)
                         {
-                            await _bot.SendMessage(update.Message!.Chat.Id, "Not implemented command", cancellationToken: cancellationToken);
                             continue;
                         }
                         var command = updateType.Value.GetCommandType();
