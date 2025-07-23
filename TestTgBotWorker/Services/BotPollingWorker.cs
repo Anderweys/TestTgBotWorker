@@ -42,14 +42,15 @@ public class BotPollingWorker : BackgroundService
                     {
                         if (update.Message is null || !update.Message.Text!.StartsWith('/'))
                         {
+                            _offset = update.Id + 1;
                             continue;
                         }
 
-                        _offset = update.Id + 1;
                         var commandText = update.Message?.Text?.Trim()?.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
                         var updateType = BotExtensions.GetCommandByText(commandText);
                         if (updateType == null)
                         {
+                            _offset = update.Id + 1;
                             continue;
                         }
                         var command = updateType.Value.GetCommandType();
@@ -68,9 +69,11 @@ public class BotPollingWorker : BackgroundService
                                 await _bot.SendMessage(update.Message!.Chat.Id, "Not implemented command", cancellationToken: cancellationToken);
                                 break;
                         }
+                        _offset = update.Id + 1;
                     }
                     catch (Exception ex)
                     {
+                        _offset = update.Id + 1;
                         if (update.Message is not null)
                         {
                             await _bot.SendMessage(update.Message.Chat.Id, $"Error: {ex.Message}, command: {update.Message.Text ?? ""}", cancellationToken: cancellationToken);
