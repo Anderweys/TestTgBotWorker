@@ -3,5 +3,6 @@
 public enum BotUpdateType
 {
     User,
-    Operation
+    Operation,
+    Ai
 }

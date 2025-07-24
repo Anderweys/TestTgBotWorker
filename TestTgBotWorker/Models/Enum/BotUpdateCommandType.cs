@@ -8,6 +8,12 @@ public enum BotUpdateCommandType
     [BotUpdate(BotUpdateType.Operation, "/weather")]
     Weather,
 
+    [BotUpdate(BotUpdateType.Ai, "/ds")]
+    DeepSeek,
+
+    [BotUpdate(BotUpdateType.Ai, "/gq")]
+    Groq,
+
     [BotUpdate(BotUpdateType.User, "/addRole")]
     AddRole
 }
