@@ -1,0 +1,6 @@
+﻿namespace TestTgBot.Application.Services.Abst.DeepSeek;
+
+public interface IDeepSeekService
+{
+    Task<string> SendSingleMessage(string message, CancellationToken cancellationToken);
+}
